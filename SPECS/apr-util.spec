@@ -1,3 +1,6 @@
+%global ns_name ea
+%global pkg_base apr-util
+%global pkg_name %{ns_name}-%{pkg_base}
 
 %if 0%{?fedora} < 18 && 0%{?rhel} < 7
 %define dbdep db4-devel
@@ -14,20 +17,21 @@
 %define apuver 1
 
 Summary: Apache Portable Runtime Utility library
-Name: apr-util
+Name: %{pkg_name}
 Version: 1.5.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
-Source0: http://www.apache.org/dist/apr/%{name}-%{version}.tar.bz2
+Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
 Patch1: apr-util-1.2.7-pkgconf.patch
 Patch2: apr-util-1.3.7-nodbmdso.patch
 Patch3: apr-util-1.5.2-aarch64.patch
 Patch4: apr-util-1.4.1-private.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: autoconf, apr-devel >= 1.3.0
+BuildRequires: autoconf, ea-apr-devel >= 1.3.0
 BuildRequires: %{dbdep}, expat-devel, libuuid-devel
+Conflicts: %{pkg_base}
 
 %description
 The mission of the Apache Portable Runtime (APR) is to provide a
@@ -38,20 +42,23 @@ for XML, LDAP, database interfaces, URI parsing and more.
 %package devel
 Group: Development/Libraries
 Summary: APR utility library development kit
-Requires: apr-util%{?_isa} = %{version}-%{release}, apr-devel%{?_isa}, pkgconfig
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Requires: ea-apr-devel%{?_isa}, pkgconfig
 Requires: %{dbdep}%{?_isa}, expat-devel%{?_isa}, openldap-devel%{?_isa}
+Conflicts: %{pkg_base}-devel
 
 %description devel
-This package provides the support files which can be used to 
-build applications using the APR utility library.  The mission 
-of the Apache Portable Runtime (APR) is to provide a free 
+This package provides the support files which can be used to
+build applications using the APR utility library.  The mission
+of the Apache Portable Runtime (APR) is to provide a free
 library of C data structures and routines.
 
 %package pgsql
 Group: Development/Libraries
 Summary: APR utility library PostgreSQL DBD driver
 BuildRequires: postgresql-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-pgsql
 
 %description pgsql
 This package provides the PostgreSQL driver for the apr-util
@@ -61,7 +68,8 @@ DBD (database abstraction) interface.
 Group: Development/Libraries
 Summary: APR utility library MySQL DBD driver
 BuildRequires: mysql-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-mysql
 
 %description mysql
 This package provides the MySQL driver for the apr-util DBD
@@ -71,7 +79,8 @@ This package provides the MySQL driver for the apr-util DBD
 Group: Development/Libraries
 Summary: APR utility library SQLite DBD driver
 BuildRequires: sqlite-devel >= 3.0.0
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-sqlite
 
 %description sqlite
 This package provides the SQLite driver for the apr-util DBD
@@ -83,7 +92,8 @@ This package provides the SQLite driver for the apr-util DBD
 Group: Development/Libraries
 Summary: APR utility library FreeTDS DBD driver
 BuildRequires: freetds-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-freetds
 
 %description freetds
 This package provides the FreeTDS driver for the apr-util DBD
@@ -95,7 +105,8 @@ This package provides the FreeTDS driver for the apr-util DBD
 Group: Development/Libraries
 Summary: APR utility library ODBC DBD driver
 BuildRequires: unixODBC-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-odbc
 
 %description odbc
 This package provides the ODBC driver for the apr-util DBD
@@ -105,7 +116,8 @@ This package provides the ODBC driver for the apr-util DBD
 Group: Development/Libraries
 Summary: APR utility library LDAP support
 BuildRequires: openldap-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-ldap
 
 %description ldap
 This package provides the LDAP support for the apr-util.
@@ -114,7 +126,8 @@ This package provides the LDAP support for the apr-util.
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
 BuildRequires: openssl-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-openssl
 
 %description openssl
 This package provides the OpenSSL crypto support for the apr-util.
@@ -123,13 +136,14 @@ This package provides the OpenSSL crypto support for the apr-util.
 Group: Development/Libraries
 Summary: APR utility library NSS crytpo support
 BuildRequires: nss-devel
-Requires: apr-util%{?_isa} = %{version}-%{release}
+Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+Conflicts: %{pkg_base}-nss
 
 %description nss
 This package provides the NSS crypto support for the apr-util.
 
 %prep
-%setup -q
+%setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
 %patch2 -p1 -b .nodbmdso
 %patch3 -p1 -b .aarch64
@@ -247,6 +261,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*.m4
 
 %changelog
+* Thu Mar 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.5.2-7
+- Renamed to ea-<pkg>, set conflicts with RHEL/CentOS upstream packages
+
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.5.2-6
 - Mass rebuild 2014-01-24
 
