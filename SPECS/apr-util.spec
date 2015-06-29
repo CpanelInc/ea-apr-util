@@ -16,6 +16,13 @@
 
 %define apuver 1
 
+%define apr_prefix /opt/cpanel/ea-apr15
+%define prefix_dir /opt/cpanel/ea-apr15-util
+%define prefix_lib %{prefix_dir}/lib/
+%define prefix_bin %{prefix_dir}/bin/
+%define prefix_inc %{prefix_dir}/include/
+%define prefix_build %{prefix_dir}/build/
+
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
@@ -154,8 +161,9 @@ autoheader && autoconf
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
-%configure --with-apr=%{_prefix} \
-        --includedir=%{_includedir}/apr-%{apuver} \
+./configure --prefix=%{prefix_dir} \
+        --with-apr=%{apr_prefix} \
+        --includedir=%{prefix_inc}/apr-%{apuver} \
         --with-ldap=ldap_r --without-gdbm \
         --with-sqlite3 --with-pgsql --with-mysql --with-odbc \
 %if %{with_freetds}
@@ -172,24 +180,21 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
-mkdir -p $RPM_BUILD_ROOT/%{_datadir}/aclocal
-install -m 644 build/find_apu.m4 $RPM_BUILD_ROOT/%{_datadir}/aclocal
-
 # Unpackaged files; remove the static libaprutil
-rm -f $RPM_BUILD_ROOT%{_libdir}/aprutil.exp \
-      $RPM_BUILD_ROOT%{_libdir}/libapr*.a
+rm -f $RPM_BUILD_ROOT%{prefix_lib}/aprutil.exp \
+      $RPM_BUILD_ROOT%{prefix_lib}/libapr*.a
 
 # And remove the reference to the static libaprutil from the .la
 # file.
 sed -i '/^old_library/s,libapr.*\.a,,' \
-      $RPM_BUILD_ROOT%{_libdir}/libapr*.la
+      $RPM_BUILD_ROOT%{prefix_lib}/libapr*.la
 
 # Remove unnecessary exports from dependency_libs
 sed -ri '/^dependency_libs/{s,-l(pq|sqlite[0-9]|rt|dl|uuid) ,,g}' \
-      $RPM_BUILD_ROOT%{_libdir}/libapr*.la
+      $RPM_BUILD_ROOT%{prefix_lib}/libapr*.la
 
 # Trim libtool DSO cruft
-rm -f $RPM_BUILD_ROOT%{_libdir}/apr-util-%{apuver}/*.*a
+rm -f $RPM_BUILD_ROOT%{prefix_lib}/apr-util-%{apuver}/*.*a
 
 %check
 # Run the less verbose test suites
@@ -212,53 +217,52 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc CHANGES LICENSE NOTICE
-%{_libdir}/libaprutil-%{apuver}.so.*
-%dir %{_libdir}/apr-util-%{apuver}
+%{prefix_lib}/libaprutil-%{apuver}.so.*
+%dir %{prefix_lib}/apr-util-%{apuver}
 
 %files pgsql
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_dbd_pgsql*
+%{prefix_lib}/apr-util-%{apuver}/apr_dbd_pgsql*
 
 %files mysql
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_dbd_mysql*
+%{prefix_lib}/apr-util-%{apuver}/apr_dbd_mysql*
 
 %files sqlite
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_dbd_sqlite*
+%{prefix_lib}/apr-util-%{apuver}/apr_dbd_sqlite*
 
 %if %{with_freetds}
 
 %files freetds
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_dbd_freetds*
+%{prefix_lib}/apr-util-%{apuver}/apr_dbd_freetds*
 
 %endif
 
 %files odbc
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_dbd_odbc*
+%{prefix_lib}/apr-util-%{apuver}/apr_dbd_odbc*
 
 %files ldap
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_ldap*
+%{prefix_lib}/apr-util-%{apuver}/apr_ldap*
 
 %files openssl
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_crypto_openssl*
+%{prefix_lib}/apr-util-%{apuver}/apr_crypto_openssl*
 
 %files nss
 %defattr(-,root,root,-)
-%{_libdir}/apr-util-%{apuver}/apr_crypto_nss*
+%{prefix_lib}/apr-util-%{apuver}/apr_crypto_nss*
 
 %files devel
 %defattr(-,root,root,-)
-%{_bindir}/apu-%{apuver}-config
-%{_libdir}/libaprutil-%{apuver}.*a
-%{_libdir}/libaprutil-%{apuver}.so
-%{_includedir}/apr-%{apuver}/*.h
-%{_libdir}/pkgconfig/*.pc
-%{_datadir}/aclocal/*.m4
+%{prefix_bin}/apu-%{apuver}-config
+%{prefix_lib}/libaprutil-%{apuver}.*a
+%{prefix_lib}/libaprutil-%{apuver}.so
+%{prefix_inc}/apr-%{apuver}/*.h
+%{prefix_lib}/pkgconfig/*.pc
 
 %changelog
 * Thu Mar 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.5.2-7
