@@ -16,7 +16,7 @@
 
 %define apuver 1
 
-%define apr_prefix /opt/cpanel/ea-apr15
+%define apr_prefix /opt/cpanel/ea-apr15/
 %define prefix_dir /opt/cpanel/ea-apr15-util
 %define prefix_lib %{prefix_dir}/lib/
 %define prefix_bin %{prefix_dir}/bin/
