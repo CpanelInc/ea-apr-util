@@ -26,7 +26,7 @@
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
@@ -265,6 +265,9 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix_lib}/pkgconfig/*.pc
 
 %changelog
+* Mon Jul 29 2015 Matt Dees <matt@cpanel.net> 1.5.2-8
+- Move ea-apr-util to /opt/cpanel/ea-apr15-util
+
 * Thu Mar 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.5.2-7
 - Renamed to ea-<pkg>, set conflicts with RHEL/CentOS upstream packages
 
