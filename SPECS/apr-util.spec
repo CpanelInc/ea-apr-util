@@ -16,12 +16,14 @@
 
 %define apuver 1
 
-%define apr_prefix /opt/cpanel/ea-apr15/
-%define prefix_dir /opt/cpanel/ea-apr15-util
-%define prefix_lib %{prefix_dir}/lib/
-%define prefix_bin %{prefix_dir}/bin/
-%define prefix_inc %{prefix_dir}/include/
-%define prefix_build %{prefix_dir}/build/
+%define apr_name   %{ns_name}-apr15
+%define apr_prefix /opt/cpanel/%{apr_name}
+
+%define prefix_name %{apr_name}-util
+%define prefix_dir /opt/cpanel/%{prefix_name}
+%define prefix_lib %{prefix_dir}/%{_lib}
+%define prefix_bin %{prefix_dir}/bin
+%define prefix_inc %{prefix_dir}/include
 
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
@@ -38,7 +40,6 @@ Patch4: apr-util-1.4.1-private.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: autoconf, ea-apr-devel >= 1.3.0
 BuildRequires: %{dbdep}, expat-devel, libuuid-devel
-Conflicts: %{pkg_base}
 
 %description
 The mission of the Apache Portable Runtime (APR) is to provide a
@@ -52,7 +53,6 @@ Summary: APR utility library development kit
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 Requires: ea-apr-devel%{?_isa}, pkgconfig
 Requires: %{dbdep}%{?_isa}, expat-devel%{?_isa}, openldap-devel%{?_isa}
-Conflicts: %{pkg_base}-devel
 
 %description devel
 This package provides the support files which can be used to
@@ -65,7 +65,6 @@ Group: Development/Libraries
 Summary: APR utility library PostgreSQL DBD driver
 BuildRequires: postgresql-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-pgsql
 
 %description pgsql
 This package provides the PostgreSQL driver for the apr-util
@@ -76,7 +75,6 @@ Group: Development/Libraries
 Summary: APR utility library MySQL DBD driver
 BuildRequires: mysql-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-mysql
 
 %description mysql
 This package provides the MySQL driver for the apr-util DBD
@@ -87,7 +85,6 @@ Group: Development/Libraries
 Summary: APR utility library SQLite DBD driver
 BuildRequires: sqlite-devel >= 3.0.0
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-sqlite
 
 %description sqlite
 This package provides the SQLite driver for the apr-util DBD
@@ -100,7 +97,6 @@ Group: Development/Libraries
 Summary: APR utility library FreeTDS DBD driver
 BuildRequires: freetds-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-freetds
 
 %description freetds
 This package provides the FreeTDS driver for the apr-util DBD
@@ -113,7 +109,6 @@ Group: Development/Libraries
 Summary: APR utility library ODBC DBD driver
 BuildRequires: unixODBC-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-odbc
 
 %description odbc
 This package provides the ODBC driver for the apr-util DBD
@@ -124,7 +119,6 @@ Group: Development/Libraries
 Summary: APR utility library LDAP support
 BuildRequires: openldap-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-ldap
 
 %description ldap
 This package provides the LDAP support for the apr-util.
@@ -134,7 +128,6 @@ Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
 BuildRequires: openssl-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-openssl
 
 %description openssl
 This package provides the OpenSSL crypto support for the apr-util.
@@ -144,7 +137,6 @@ Group: Development/Libraries
 Summary: APR utility library NSS crytpo support
 BuildRequires: nss-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Conflicts: %{pkg_base}-nss
 
 %description nss
 This package provides the NSS crypto support for the apr-util.
@@ -162,6 +154,7 @@ autoheader && autoconf
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
 ./configure --prefix=%{prefix_dir} \
+        --libdir=%{prefix_lib} \
         --with-apr=%{apr_prefix} \
         --includedir=%{prefix_inc}/apr-%{apuver} \
         --with-ldap=ldap_r --without-gdbm \
@@ -195,6 +188,19 @@ sed -ri '/^dependency_libs/{s,-l(pq|sqlite[0-9]|rt|dl|uuid) ,,g}' \
 
 # Trim libtool DSO cruft
 rm -f $RPM_BUILD_ROOT%{prefix_lib}/apr-util-%{apuver}/*.*a
+
+# Use our correctly-named package files within pkgconfig
+sed -ri '/pkg-config/{s,apr-util-%{apuver},%{prefix_name}-%{apuver},g}' \
+      $RPM_BUILD_ROOT%{prefix_bin}/apu-%{apuver}-config
+
+# Without a valid Requires line, pkgconfig won't return anything useful
+sed -ri '/^Requires/{s,apr-1,%{apr_name}-%{apuver},}' \
+      $RPM_BUILD_ROOT%{prefix_lib}/pkgconfig/apr-util-%{apuver}.pc
+
+# In order for apr-util and our package to coexist, we have to name
+# our pkgconfig files something else
+mkdir -p $RPM_BUILD_ROOT%{_libdir}/pkgconfig
+mv $RPM_BUILD_ROOT%{prefix_lib}/pkgconfig/apr-util-%{apuver}.pc $RPM_BUILD_ROOT%{_libdir}/pkgconfig/%{prefix_name}-%{apuver}.pc
 
 %check
 # Run the less verbose test suites
@@ -262,10 +268,10 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix_lib}/libaprutil-%{apuver}.*a
 %{prefix_lib}/libaprutil-%{apuver}.so
 %{prefix_inc}/apr-%{apuver}/*.h
-%{prefix_lib}/pkgconfig/*.pc
+%{_libdir}/pkgconfig/*.pc
 
 %changelog
-* Mon Jul 29 2015 Matt Dees <matt@cpanel.net> 1.5.2-8
+* Mon Jun 29 2015 Matt Dees <matt@cpanel.net> 1.5.2-8
 - Move ea-apr-util to /opt/cpanel/ea-apr15-util
 
 * Thu Mar 26 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 1.5.2-7
