@@ -16,11 +16,8 @@
 
 %define apuver 1
 
-%define apr_name   %{ns_name}-apr15
-%define apr_prefix /opt/cpanel/%{apr_name}
-
-%define prefix_name %{apr_name}-util
-%define prefix_dir /opt/cpanel/%{prefix_name}
+%define prefix_name %{ea_apr_name}-util
+%define prefix_dir /opt/cpanel/%{ea_apr_name}
 %define prefix_lib %{prefix_dir}/%{_lib}
 %define prefix_bin %{prefix_dir}/bin
 %define prefix_inc %{prefix_dir}/include
@@ -28,11 +25,12 @@
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
 Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
+Source1: macros.ea-apu
 Patch1: apr-util-1.2.7-pkgconf.patch
 Patch2: apr-util-1.3.7-nodbmdso.patch
 Patch3: apr-util-1.5.2-aarch64.patch
@@ -155,7 +153,7 @@ autoheader && autoconf
 export ac_cv_ldap_set_rebind_proc_style=three
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
-        --with-apr=%{apr_prefix} \
+        --with-apr=%{ea_apr_dir} \
         --includedir=%{prefix_inc}/apr-%{apuver} \
         --with-ldap=ldap_r --without-gdbm \
         --with-sqlite3 --with-pgsql --with-mysql --with-odbc \
@@ -190,17 +188,22 @@ sed -ri '/^dependency_libs/{s,-l(pq|sqlite[0-9]|rt|dl|uuid) ,,g}' \
 rm -f $RPM_BUILD_ROOT%{prefix_lib}/apr-util-%{apuver}/*.*a
 
 # Use our correctly-named package files within pkgconfig
-sed -ri '/pkg-config/{s,apr-util-%{apuver},%{prefix_name}-%{apuver},g}' \
-      $RPM_BUILD_ROOT%{prefix_bin}/apu-%{apuver}-config
-
-# Without a valid Requires line, pkgconfig won't return anything useful
-sed -ri '/^Requires/{s,apr-1,%{apr_name}-%{apuver},}' \
-      $RPM_BUILD_ROOT%{prefix_lib}/pkgconfig/apr-util-%{apuver}.pc
+sed -ri '/pkg-config/{s/apr-util-%{apuver}/%{prefix_name}-%{apuver}/}' \
+    $RPM_BUILD_ROOT%{prefix_bin}/apu-%{apuver}-config
+%ea_apr_fix_requires $RPM_BUILD_ROOT%{prefix_lib}/pkgconfig/apr-util-%{apuver}.pc
 
 # In order for apr-util and our package to coexist, we have to name
 # our pkgconfig files something else
 mkdir -p $RPM_BUILD_ROOT%{_libdir}/pkgconfig
 mv $RPM_BUILD_ROOT%{prefix_lib}/pkgconfig/apr-util-%{apuver}.pc $RPM_BUILD_ROOT%{_libdir}/pkgconfig/%{prefix_name}-%{apuver}.pc
+
+# Set up the macros file
+install -d -m 755 $RPM_BUILD_ROOT%{_sysconfdir}/rpm
+sed -e 's/@APU_NAME@/%{prefix_name}/g' \
+    -e 's/@APU_VER@/%{apuver}/g' \
+    -e 's,@APU_DIR@,%{prefix_dir},g' \
+    -e 's/@NAMESPACE@/%{ns_name}_/g' \
+    %{SOURCE1} > $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %check
 # Run the less verbose test suites
@@ -269,8 +272,12 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix_lib}/libaprutil-%{apuver}.so
 %{prefix_inc}/apr-%{apuver}/*.h
 %{_libdir}/pkgconfig/*.pc
+%{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Fri Jul 31 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.5.2-9
+- Added macro handling for apr dependency resolution
+
 * Mon Jun 29 2015 Matt Dees <matt@cpanel.net> 1.5.2-8
 - Move ea-apr-util to /opt/cpanel/ea-apr15-util
 

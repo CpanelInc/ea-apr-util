@@ -1,0 +1,14 @@
+#
+# Locations for apr-util
+#
+%@NAMESPACE@apu_name @APU_NAME@
+%@NAMESPACE@apu_ver  @APU_VER@
+%@NAMESPACE@apu_dir  @APU_DIR@
+
+%ea_apu_fix_pkgconfig() %{expand:
+  sed -ri '/pkg-config/{s/apu-%{@NAMESPACE@apr_ver}/%{@NAMESPACE@apu_name}-%{@NAMESPACE@apu_ver}/}' %1
+}
+
+%ea_apu_fix_requires() %{expand:
+  sed -ri '/^Requires:/{s/apu-%{@NAMESPACE@apu_ver}/%{@NAMESPACE@apu_name}-%{@NAMESPACE@apu_ver}/}' %1
+}
