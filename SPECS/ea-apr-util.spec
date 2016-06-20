@@ -25,7 +25,9 @@
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
-Release: 9%{?dist}
+# Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
+%define release_prefix 11
+Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
@@ -275,6 +277,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Jun 20 2016 Dan Muey <dan@cpanel.net> - 1.5.2-11
+- EA-4383: Update Release value to OBS-proof versioning
+
 * Fri Jul 31 2015 Trinity Quirk <trinity.quirk@cpanel.net> 1.5.2-9
 - Added macro handling for apr dependency resolution
 
