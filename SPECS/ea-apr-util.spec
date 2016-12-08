@@ -26,19 +26,20 @@ Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 11
+%define release_prefix 12
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
 Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
-Source1: macros.ea-apu
+Source1: macros.%{ns_name}-apu
 Patch1: apr-util-1.2.7-pkgconf.patch
 Patch2: apr-util-1.3.7-nodbmdso.patch
 Patch3: apr-util-1.5.2-aarch64.patch
 Patch4: apr-util-1.4.1-private.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: autoconf, ea-apr-devel >= 1.3.0
+Requires: %{ns_name}-apr%{?_isa} >= 1.5.2
+BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.5.2
 BuildRequires: %{dbdep}, expat-devel, libuuid-devel
 
 %description
@@ -51,7 +52,7 @@ for XML, LDAP, database interfaces, URI parsing and more.
 Group: Development/Libraries
 Summary: APR utility library development kit
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
-Requires: ea-apr-devel%{?_isa}, pkgconfig
+Requires: %{ns_name}-apr-devel%{?_isa}, pkgconfig
 Requires: %{dbdep}%{?_isa}, expat-devel%{?_isa}, openldap-devel%{?_isa}
 
 %description devel
@@ -277,6 +278,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Fri Dec 02 2016 S. Kurt Newman <kurt.newman@cpanel.net> - 1.5.2-12
+- Now depends on ea-apr (EA-5718)
+- Uses ns_name macro (EA-5718)
+
 * Mon Jun 20 2016 Dan Muey <dan@cpanel.net> - 1.5.2-11
 - EA-4383: Update Release value to OBS-proof versioning
 
