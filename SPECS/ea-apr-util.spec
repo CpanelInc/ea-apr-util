@@ -25,8 +25,9 @@
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
 Version: 1.5.2
+Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 12
+%define release_prefix 13
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -278,6 +279,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Tue Dec 20 2016 Cory McIntire <cory@cpanel.net> - 1.5.2-13
+- Added Vendor Field to the RPM SPEC file
+
 * Fri Dec 02 2016 S. Kurt Newman <kurt.newman@cpanel.net> - 1.5.2-12
 - Now depends on ea-apr (EA-5718)
 - Uses ns_name macro (EA-5718)
