@@ -128,7 +128,7 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
-BuildRequires: openssl-devel
+BuildRequires: ea-openssl-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -168,7 +168,7 @@ export ac_cv_ldap_set_rebind_proc_style=three
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
-        --with-crypto --with-openssl --with-nss
+        --with-crypto --with-openssl=/opt/cpanel/ea-openssl --with-nss
 make %{?_smp_mflags}
 
 %install
