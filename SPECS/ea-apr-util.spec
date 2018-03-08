@@ -27,7 +27,7 @@ Name: %{pkg_name}
 Version: 1.5.2
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 13
+%define release_prefix 14
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -279,6 +279,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Mar 08 2018 Daniel Muey <dan@cpanel.net> - 1.5.2-14
+- ZC-3460: build apr-util against our ea-openssl
+
 * Tue Dec 20 2016 Cory McIntire <cory@cpanel.net> - 1.5.2-13
 - Added Vendor Field to the RPM SPEC file
 
