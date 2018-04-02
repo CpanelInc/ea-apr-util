@@ -26,23 +26,21 @@
 
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
-Version: 1.5.2
+Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 15
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
-Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
+Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
 Source1: macros.%{ns_name}-apu
-Patch1: apr-util-1.2.7-pkgconf.patch
-Patch2: apr-util-1.3.7-nodbmdso.patch
-Patch3: apr-util-1.5.2-aarch64.patch
-Patch4: apr-util-1.4.1-private.patch
+Patch1: 0001-Update-pkg-config-variables.patch
+Patch2: 0002-Force-static-linking-of-DBM-code.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-Requires: %{ns_name}-apr%{?_isa} >= 1.5.2
-BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.5.2
+Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
+BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.6.3
 BuildRequires: %{dbdep}, expat-devel, libuuid-devel
 
 %description
@@ -150,8 +148,6 @@ This package provides the NSS crypto support for the apr-util.
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
 %patch2 -p1 -b .nodbmdso
-%patch3 -p1 -b .aarch64
-%patch4 -p1 -b .private
 
 %build
 autoheader && autoconf
@@ -283,6 +279,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Mar 22 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-1
+- EA-7243: Update to 1.6.1
+
 * Wed Mar 21 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.5.2-15
 - ZC-3552: Adjusted for ea-openssl versioning and fixup
 
