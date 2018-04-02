@@ -2,6 +2,8 @@
 %global pkg_base apr-util
 %global pkg_name %{ns_name}-%{pkg_base}
 
+%define ea_openssl_ver 1.0.2n-3
+
 %if 0%{?fedora} < 18 && 0%{?rhel} < 7
 %define dbdep db4-devel
 %else
@@ -27,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.5.2
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 14
+%define release_prefix 15
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -128,7 +130,8 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
-BuildRequires: ea-openssl-devel
+Requires: ea-openssl >= %{ea_openssl_ver}
+BuildRequires: ea-openssl-devel >= %{ea_openssl_ver}
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -155,6 +158,7 @@ autoheader && autoconf
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
+export LDADD_crypto_openssl="-Wl,-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -215,7 +219,7 @@ export MALLOC_CHECK_=2 MALLOC_PERTURB_=$(($RANDOM % 255 + 1))
 cd test
 make %{?_smp_mflags} testall
 # testall breaks with DBD DSO; ignore
-export LD_LIBRARY_PATH="`echo "../dbm/.libs:../dbd/.libs:../ldap/.libs:$LD_LIBRARY_PATH" | sed -e 's/::*$//'`"
+export LD_LIBRARY_PATH="`echo "../dbm/.libs:../dbd/.libs:../ldap/.libs:../crypto/.libs:$LD_LIBRARY_PATH" | sed -e 's/::*$//'`"
 ./testall -v -q || true
 ./testall testrmm
 ./testall testdbm
@@ -279,6 +283,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Wed Mar 21 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.5.2-15
+- ZC-3552: Adjusted for ea-openssl versioning and fixup
+
 * Thu Mar 08 2018 Daniel Muey <dan@cpanel.net> - 1.5.2-14
 - ZC-3460: build apr-util against our ea-openssl
 
