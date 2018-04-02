@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rishwanth Yeddula <rish@cpanel.net>
+Date: Thu, 22 Mar 2018 15:05:50 -0500
+Subject: [PATCH 1/2] Update pkg-config variables
+
+---
+ Makefile.in    | 2 +-
+ apr-util.pc.in | 3 ++-
+ apu-config.in  | 3 ++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 208dd1c..df431b5 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -73,7 +73,7 @@ top_blddir=@abs_builddir@
+ 
+ # Create apu-config script suitable for the install tree
+ apu-config.out: $(APU_CONFIG)
+-	sed 's,^\(location=\).*$$,\1installed,' < $(APU_CONFIG) > $@
++	sed 's,^\(location=\).*$$,\1installed,;s,^\(APR_.*_DIR\)=.*,\1="$${libdir}/build",' < $(APU_CONFIG) > $@
+ 
+ install: $(TARGETS) install-modules
+ 	$(APR_MKDIR) $(DESTDIR)$(includedir) $(DESTDIR)$(libdir)/pkgconfig \
+diff --git a/apr-util.pc.in b/apr-util.pc.in
+index 5b146af..405e672 100644
+--- a/apr-util.pc.in
++++ b/apr-util.pc.in
+@@ -9,5 +9,6 @@ Description: Companion library for APR
+ Version: @APRUTIL_DOTTED_VERSION@
+ # assume that apr-util requires libapr of same major version
+ Requires: apr-@APRUTIL_MAJOR_VERSION@
+-Libs: -L${libdir} -l@APRUTIL_LIBNAME@ @LDADD_ldap@ @APRUTIL_EXPORT_LIBS@
++Libs: -L${libdir} -l@APRUTIL_LIBNAME@ @LDADD_ldap@ 
++Libs.private: @APRUTIL_EXPORT_LIBS@
+ Cflags: -I${includedir}
+diff --git a/apu-config.in b/apu-config.in
+index 82109e5..8dc0c36 100644
+--- a/apu-config.in
++++ b/apu-config.in
+@@ -24,9 +24,10 @@ APRUTIL_DOTTED_VERSION="@APRUTIL_DOTTED_VERSION@"
+ prefix="@prefix@"
+ exec_prefix="@exec_prefix@"
+ bindir="@bindir@"
+-libdir="@libdir@"
+ includedir="@includedir@"
+ 
++libdir=`pkg-config --variable=libdir apr-util-@APRUTIL_MAJOR_VERSION@`
++
+ LIBS="@APRUTIL_EXPORT_LIBS@"
+ INCLUDES="@APRUTIL_INCLUDES@"
+ LDFLAGS="@APRUTIL_LDFLAGS@"
