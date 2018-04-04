@@ -157,7 +157,7 @@ autoheader && autoconf
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
-export openssl_LDFLAGS="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
+export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
