@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rishwanth Yeddula <rish@cpanel.net>
+Date: Wed, 4 Apr 2018 15:20:27 -0500
+Subject: [PATCH 3/3] Link against ea-openssl explicitly
+
+---
+ configure | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/configure b/configure
+index 7a1f026..05f8ef0 100755
+--- a/configure
++++ b/configure
+@@ -4846,7 +4846,7 @@ if ${ac_cv_lib_ssl_SSL_accept+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lssl -lcrypto $LIBS"
++LIBS="-l:libssl.so.1.0.0 -l:libcrypto.so.1.0.0 $LIBS"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+@@ -4992,7 +4992,7 @@ if ${ac_cv_lib_ssl_SSL_accept+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lssl -lcrypto $LIBS"
++LIBS="-l:libssl.so.1.0.0 -l:libcrypto.so.1.0.0 $LIBS"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
+@@ -5101,10 +5101,10 @@ fi
+       if test "$apu_have_openssl" = "1"; then
+ 
+   if test "x$LDADD_crypto_openssl" = "x"; then
+-    test "x$silent" != "xyes" && echo "  setting LDADD_crypto_openssl to \"$openssl_LDFLAGS -lssl -lcrypto\""
+-    LDADD_crypto_openssl="$openssl_LDFLAGS -lssl -lcrypto"
++    test "x$silent" != "xyes" && echo "  setting LDADD_crypto_openssl to \"$openssl_LDFLAGS -l:libssl.so.1.0.0 -l:libcrypto.so.1.0.0\""
++    LDADD_crypto_openssl="$openssl_LDFLAGS -l:libssl.so.1.0.0 -l:libcrypto.so.1.0.0"
+   else
+-    apr_addto_bugger="$openssl_LDFLAGS -lssl -lcrypto"
++    apr_addto_bugger="$openssl_LDFLAGS -l:libssl.so.1.0.0 -l:libcrypto.so.1.0.0"
+     for i in $apr_addto_bugger; do
+       apr_addto_duplicate="0"
+       for j in $LDADD_crypto_openssl; do
