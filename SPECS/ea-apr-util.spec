@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 1
+%define release_prefix 2
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -38,6 +38,7 @@ Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
 Source1: macros.%{ns_name}-apu
 Patch1: 0001-Update-pkg-config-variables.patch
 Patch2: 0002-Force-static-linking-of-DBM-code.patch
+Patch3: 0003-Link-against-ea-openssl-explicitly.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
 BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.6.3
@@ -129,6 +130,7 @@ This package provides the LDAP support for the apr-util.
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
 Requires: ea-openssl >= %{ea_openssl_ver}
+BuildRequires: ea-openssl >= %{ea_openssl_ver}
 BuildRequires: ea-openssl-devel >= %{ea_openssl_ver}
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
@@ -148,13 +150,14 @@ This package provides the NSS crypto support for the apr-util.
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
 %patch2 -p1 -b .nodbmdso
+%patch3 -p1 -b .ssllinks
 
 %build
 autoheader && autoconf
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
-export LDADD_crypto_openssl="-Wl,-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
+export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -279,6 +282,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Mar 22 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-2
+- EA-7360: Link against ea-openssl explicitly
+
 * Thu Mar 22 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-1
 - EA-7243: Update to 1.6.1
 
