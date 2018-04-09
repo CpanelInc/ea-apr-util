@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 2
+%define release_prefix 3
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -153,7 +153,7 @@ This package provides the NSS crypto support for the apr-util.
 %patch3 -p1 -b .ssllinks
 
 %build
-autoheader && autoconf
+autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
@@ -282,6 +282,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Apr 09 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-3
+- EA-7390: Avoid random build failures related to the autoconf cache.
+
 * Thu Mar 22 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-2
 - EA-7360: Link against ea-openssl explicitly
 
