@@ -2,7 +2,7 @@
 %global pkg_base apr-util
 %global pkg_name %{ns_name}-%{pkg_base}
 
-%define ea_openssl_ver 1.0.2n-3
+%define ea_openssl_ver 1.0.2o-2
 
 %if 0%{?fedora} < 18 && 0%{?rhel} < 7
 %define dbdep db4-devel
@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 3
+%define release_prefix 4
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -282,6 +282,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Apr 16 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-4
+- EA-7382: Update dependency on ea-openssl to require the latest version with versioned symbols.
+
 * Mon Apr 09 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-3
 - EA-7390: Avoid random build failures related to the autoconf cache.
 
