@@ -38,7 +38,7 @@ Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
 Source1: macros.%{ns_name}-apu
 Patch1: 0001-Update-pkg-config-variables.patch
 Patch2: 0002-Force-static-linking-of-DBM-code.patch
-Patch3: 0003-Link-against-ea-openssl-explicitly.patch
+Patch3: 0003-Link-against-ea-openssl11-explicitly.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
 BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.6.3
@@ -129,9 +129,9 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
-Requires: ea-openssl >= %{ea_openssl_ver}
-BuildRequires: ea-openssl >= %{ea_openssl_ver}
-BuildRequires: ea-openssl-devel >= %{ea_openssl_ver}
+Requires: ea-openssl11 >= %{ea_openssl_ver}
+BuildRequires: ea-openssl11 >= %{ea_openssl_ver}
+BuildRequires: ea-openssl11-devel >= %{ea_openssl_ver}
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -157,7 +157,7 @@ autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
-export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
+export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -171,7 +171,7 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cp
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
-        --with-crypto --with-openssl=/opt/cpanel/ea-openssl --with-nss
+        --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss
 make %{?_smp_mflags}
 
 %install
