@@ -1,0 +1,70 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+# cpanel - find-latest-version                  Copyright(c) 2019 cPanel, L.L.C.
+#                                                           All rights Reserved.
+# copyright@cpanel.net                                         http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited
+#
+# This provides incremental updates to existing packages in EasyApache4.
+package apr_util::find_latest_version;
+
+use strict;
+use warnings;
+
+use lib "../ea-tools/lib/ea4_tool";    # assumes ea-tools is checked out next to this repo
+use ea4_tool::util ();
+
+ea4_tool::util::find_latest_version( \&_get_required, \&_add_sum ) if !caller();
+
+###############
+#### helpers ##
+###############
+
+sub _sort_block {
+    my @a = split( /\./, $a );
+    my @b = split( /\./, $b );
+
+    return 1  if ( $a[0] > $b[0] );
+    return -1 if ( $a[0] < $b[0] );
+    return 1  if ( $a[1] > $b[1] );
+    return -1 if ( $a[1] < $b[1] );
+    return 1  if ( $a[2] > $b[2] );
+    return -1 if ( $a[2] < $b[2] );
+
+    return 0;
+}
+
+sub _get_required {
+    my ($http) = @_;
+
+    my $listing_url = "https://www-us.apache.org/dist/apr/";
+    my $res         = $http->get($listing_url);
+    if ( !$res->{success} ) {
+        die "Could not GET apr-util dist page ($res->{status} $res->{reason})\n";
+    }
+
+    my @apr_util = sort _sort_block ( $res->{content} =~ m/href="apr-util-(1\.\d+\.\d+)\.tar\.bz2"/g );
+    if ( !@apr_util ) {
+        die "Could not find apr-util versions ($res->{status} $res->{reason}\n";
+    }
+
+    my $version = "$apr_util[0]";
+    my $name    = "apr-util-$version.tar.bz2";
+    my $url     = "$listing_url/$name";
+
+    return ( $version, $url, $name );
+}
+
+sub _add_sum {
+    my ( $http, $hr ) = @_;
+
+    my $res = $http->get( $hr->{tarball}{url} . ".sha256" );
+    if ( !$res->{success} ) {
+        die "Could not GET sha256 ($res->{status} $res->{reason})\n";
+    }
+
+    $hr->{tarball}{sum}{type} = "sha256";
+    $hr->{tarball}{sum}{hex}  = $res->{content};
+    $hr->{tarball}{sum}{hex} =~ s/ .*$//s;
+
+    return 1;
+}
