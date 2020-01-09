@@ -2,7 +2,7 @@
 %global pkg_base apr-util
 %global pkg_name %{ns_name}-%{pkg_base}
 
-%define ea_openssl_ver 1.0.2o-2
+%define ea_openssl_ver 1.1.1d-1
 
 %if 0%{?fedora} < 18 && 0%{?rhel} < 7
 %define dbdep db4-devel
@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 4
+%define release_prefix 5
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -38,7 +38,7 @@ Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
 Source1: macros.%{ns_name}-apu
 Patch1: 0001-Update-pkg-config-variables.patch
 Patch2: 0002-Force-static-linking-of-DBM-code.patch
-Patch3: 0003-Link-against-ea-openssl-explicitly.patch
+Patch3: 0003-Link-against-ea-openssl11-explicitly.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
 BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.6.3
@@ -129,9 +129,9 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
-Requires: ea-openssl >= %{ea_openssl_ver}
-BuildRequires: ea-openssl >= %{ea_openssl_ver}
-BuildRequires: ea-openssl-devel >= %{ea_openssl_ver}
+Requires: ea-openssl11 >= %{ea_openssl_ver}
+BuildRequires: ea-openssl11 >= %{ea_openssl_ver}
+BuildRequires: ea-openssl11-devel >= %{ea_openssl_ver}
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -157,7 +157,7 @@ autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
-export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl/%{_lib}"
+export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -171,7 +171,7 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl/%{_lib} -Wl,-rpath=/opt/cp
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
-        --with-crypto --with-openssl=/opt/cpanel/ea-openssl --with-nss
+        --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss
 make %{?_smp_mflags}
 
 %install
@@ -282,6 +282,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Tue Sep 24 2019 Daniel Muey <dan@cpanel.net> - 1.6.1-5
+- ZC-4361: Update ea-openssl requirement to v1.1.1 (ZC-5583)
+
 * Mon Apr 16 2018 Rishwanth Yeddula <rish@cpanel.net> - 1.6.1-4
 - EA-7382: Update dependency on ea-openssl to require the latest version with versioned symbols.
 
