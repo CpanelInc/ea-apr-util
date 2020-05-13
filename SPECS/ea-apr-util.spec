@@ -283,6 +283,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Jun 29 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-6
+- ZC-6801: Build on CentOS 8
+
 * Thu Jun 18 2020 Tim Mullin <tim@cpanel.net> - 1.6.1-6
 - EA-9121: Fix ea-apr-util-mysql to link to ea-openssl11
 
