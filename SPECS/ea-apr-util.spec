@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 5
+%define release_prefix 6
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -157,6 +157,7 @@ autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
+export LDADD_dbd_mysql="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
@@ -282,6 +283,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Jun 18 2020 Tim Mullin <tim@cpanel.net> - 1.6.1-6
+- EA-9121: Fix ea-apr-util-mysql to link to ea-openssl11
+
 * Tue Sep 24 2019 Daniel Muey <dan@cpanel.net> - 1.6.1-5
 - ZC-4361: Update ea-openssl requirement to v1.1.1 (ZC-5583)
 
