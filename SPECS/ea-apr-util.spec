@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 6
+%define release_prefix 7
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -293,7 +293,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
-* Mon Jun 29 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-6
+* Mon Jun 29 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-7
 - ZC-6801: Build on CentOS 8
 
 * Thu Jun 18 2020 Tim Mullin <tim@cpanel.net> - 1.6.1-6
