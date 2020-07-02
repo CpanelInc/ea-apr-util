@@ -29,16 +29,19 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 6
+%define release_prefix 7
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
 Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
 Source1: macros.%{ns_name}-apu
+
 Patch1: 0001-Update-pkg-config-variables.patch
 Patch2: 0002-Force-static-linking-of-DBM-code.patch
 Patch3: 0003-Link-against-ea-openssl11-explicitly.patch
+Patch4: 0004-apr-util-to-make-it-work-with-Mysql.patch
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
 BuildRequires: autoconf, %{ns_name}-apr-devel >= 1.6.3
@@ -152,7 +155,12 @@ This package provides the NSS crypto support for the apr-util.
 %patch2 -p1 -b .nodbmdso
 %patch3 -p1 -b .ssllinks
 
+%if 0%{?rhel} > 7
+%patch4 -p1 -b .mysql8
+%endif
+
 %build
+
 autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
@@ -164,7 +172,7 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
         --with-apr=%{ea_apr_dir} \
         --includedir=%{prefix_inc}/apr-%{apuver} \
         --with-ldap=ldap_r --without-gdbm \
-        --with-sqlite3 --with-pgsql --with-mysql --with-odbc \
+        --with-sqlite3 --with-pgsql --with-odbc \
 %if %{with_freetds}
         --with-freetds \
 %else
@@ -172,7 +180,9 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
-        --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss
+        --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss \
+        --with-mysql
+
 make %{?_smp_mflags}
 
 %install
@@ -283,6 +293,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Jun 29 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-7
+- ZC-6801: Build on CentOS 8
+
 * Thu Jun 18 2020 Tim Mullin <tim@cpanel.net> - 1.6.1-6
 - EA-9121: Fix ea-apr-util-mysql to link to ea-openssl11
 
@@ -446,7 +459,7 @@ rm -rf $RPM_BUILD_ROOT
 * Fri Jan 23 2009 Joe Orton <jorton@redhat.com> 1.3.4-2
 - rebuild for new MySQL
 
-* Wed Aug 16 2008 Bojan Smojver <bojan@rexursive.com> - 1.3.4-1
+* Sat Aug 16 2008 Bojan Smojver <bojan@rexursive.com> - 1.3.4-1
 - bump up to 1.3.4
 - drop PostgreSQL patch, fixed upstream
 
