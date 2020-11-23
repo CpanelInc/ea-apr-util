@@ -132,9 +132,20 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
+%if 0%{?rhel} > 7
+#
+# We made a conscious decision to only use system openssl on C8.
+# See design doc:
+# https://enterprise.cpanel.net/projects/EA4/repos/ea-openssl11/DESIGN.md
+# 
+Requires: openssl
+BuildRequires: openssl
+BuildRequires: openssl-devel
+%else
 Requires: ea-openssl11 >= %{ea_openssl_ver}
 BuildRequires: ea-openssl11 >= %{ea_openssl_ver}
 BuildRequires: ea-openssl11-devel >= %{ea_openssl_ver}
+%endif
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -152,7 +163,6 @@ This package provides the NSS crypto support for the apr-util.
 %prep
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
-%patch2 -p1 -b .nodbmdso
 %patch3 -p1 -b .ssllinks
 
 %if 0%{?rhel} > 7
@@ -165,8 +175,11 @@ autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
+%if 0%{?rhel} < 8
 export LDADD_dbd_mysql="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
+%endif
+
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -180,7 +193,11 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
+%if 0%{?rhel} < 8
         --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss \
+%else
+        --with-crypto --with-openssl --with-nss \
+%endif
         --with-mysql
 
 make %{?_smp_mflags}
@@ -223,6 +240,8 @@ sed -e 's/@APU_NAME@/%{prefix_name}/g' \
     -e 's/@NAMESPACE@/%{ns_name}_/g' \
     %{SOURCE1} > $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.%{pkg_name}
 
+rm -f /usr/lib/debug/opt/cpanel/ea-apr16/lib64/apr-util-1/apr_dbm_db-1.so-1.6.1-8.el8.cpanel.x86_64.debug
+
 %check
 # Run the less verbose test suites
 export MALLOC_CHECK_=2 MALLOC_PERTURB_=$(($RANDOM % 255 + 1))
@@ -246,6 +265,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc CHANGES LICENSE NOTICE
 %{prefix_lib}/libaprutil-%{apuver}.so.*
 %dir %{prefix_lib}/apr-util-%{apuver}
+%{prefix_lib}/apr-util-%{apuver}/apr_dbm_db*
 
 %files pgsql
 %defattr(-,root,root,-)
