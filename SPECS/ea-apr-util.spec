@@ -240,8 +240,6 @@ sed -e 's/@APU_NAME@/%{prefix_name}/g' \
     -e 's/@NAMESPACE@/%{ns_name}_/g' \
     %{SOURCE1} > $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.%{pkg_name}
 
-rm -f /usr/lib/debug/opt/cpanel/ea-apr16/lib64/apr-util-1/apr_dbm_db-1.so-1.6.1-8.el8.cpanel.x86_64.debug
-
 %check
 # Run the less verbose test suites
 export MALLOC_CHECK_=2 MALLOC_PERTURB_=$(($RANDOM % 255 + 1))
