@@ -163,7 +163,10 @@ This package provides the NSS crypto support for the apr-util.
 %prep
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
+%patch2 -p1 -b .nodbmdso
+%if 0%{?rhel} < 8
 %patch3 -p1 -b .ssllinks
+%endif
 
 %if 0%{?rhel} > 7
 %patch4 -p1 -b .mysql8
@@ -263,7 +266,6 @@ rm -rf $RPM_BUILD_ROOT
 %doc CHANGES LICENSE NOTICE
 %{prefix_lib}/libaprutil-%{apuver}.so.*
 %dir %{prefix_lib}/apr-util-%{apuver}
-%{prefix_lib}/apr-util-%{apuver}/apr_dbm_db*
 
 %files pgsql
 %defattr(-,root,root,-)
