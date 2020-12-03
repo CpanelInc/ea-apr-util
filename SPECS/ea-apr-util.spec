@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 7
+%define release_prefix 8
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -132,9 +132,16 @@ This package provides the LDAP support for the apr-util.
 %package openssl
 Group: Development/Libraries
 Summary: APR utility library OpenSSL crytpo support
+%if 0%{?rhel} > 7
+# In C8 we use system openssl. See DESIGN.md in ea-openssl11 git repo for details
+Requires: openssl
+BuildRequires: openssl
+BuildRequires: openssl-devel
+%else
 Requires: ea-openssl11 >= %{ea_openssl_ver}
 BuildRequires: ea-openssl11 >= %{ea_openssl_ver}
 BuildRequires: ea-openssl11-devel >= %{ea_openssl_ver}
+%endif
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description openssl
@@ -153,7 +160,9 @@ This package provides the NSS crypto support for the apr-util.
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
 %patch2 -p1 -b .nodbmdso
+%if 0%{?rhel} < 8
 %patch3 -p1 -b .ssllinks
+%endif
 
 %if 0%{?rhel} > 7
 %patch4 -p1 -b .mysql8
@@ -165,8 +174,11 @@ autoheader && autoconf -f
 # A fragile autoconf test which fails if the code trips
 # any other warning; force correct result for OpenLDAP:
 export ac_cv_ldap_set_rebind_proc_style=three
+%if 0%{?rhel} < 8
 export LDADD_dbd_mysql="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
+%endif
+
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
@@ -180,7 +192,11 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
 %endif
         --with-berkeley-db \
         --without-sqlite2 \
+%if 0%{?rhel} < 8
         --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss \
+%else
+        --with-crypto --with-openssl --with-nss \
+%endif
         --with-mysql
 
 make %{?_smp_mflags}
@@ -293,6 +309,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Nov 23 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-8
+- ZC-8005: Remove ea-openssl11 on C8
+
 * Mon Jun 29 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-7
 - ZC-6801: Build on CentOS 8
 
