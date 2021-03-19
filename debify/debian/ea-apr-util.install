@@ -1,4 +1,3 @@
-debian/tmp/opt/cpanel/ea-apr16/lib64/apr-util-1 /opt/cpanel/ea-apr16/lib64
 debian/tmp/opt/cpanel/ea-apr16/lib64/libaprutil-1.so.0 /opt/cpanel/ea-apr16/lib64
 debian/tmp/opt/cpanel/ea-apr16/lib64/libaprutil-1.so.0.6.1 /opt/cpanel/ea-apr16/lib64
 debian/tmp/docs/CHANGES /usr/share/doc/ea-apr-util-1.6.1
