@@ -2,7 +2,7 @@
 
 ## BEGIN_MAKE_VARS
 ## NOTE: These variables are re-generated for each version
-?_isa                := 
+aprver               := 1
 __isa_bits           := 64
 __isa_name           := x86
 __sourcedir          := 
@@ -42,7 +42,7 @@ buildroot            := /usr/src/packages/BUILD
 cpanel_version       := 1.6.1.9
 dbdep                := libdb-devel
 ea_apr_dir           := /opt/cpanel/ea-apr16
-ea_apr_name          := ea_apr16
+ea_apr_name          := ea-apr16
 ea_openssl_ver       := 1.1.1d-1
 ix86                 := i386
 ns_name              := ea
@@ -50,11 +50,11 @@ pkg                  :=
 pkg_base             := apr-util
 pkg_name             := ea-apr-util
 pkgname              := ea-apr-util
-prefix_bin           := /opt/cpanel/ea_apr16/bin
-prefix_dir           := /opt/cpanel/ea_apr16
-prefix_inc           := /opt/cpanel/ea_apr16/include
-prefix_lib           := /opt/cpanel/ea_apr16/lib64
-prefix_name          := ea_apr16-util
+prefix_bin           := /opt/cpanel/ea-apr16/bin
+prefix_dir           := /opt/cpanel/ea-apr16
+prefix_inc           := /opt/cpanel/ea-apr16/include
+prefix_lib           := /opt/cpanel/ea-apr16/lib64
+prefix_name          := ea-apr16-util
 release              := 9
 release_prefix       := 9
 scl                  := ea-apr-util
@@ -62,8 +62,8 @@ scl_prefix           :=
 version              := 1.6.1
 with_freetds         := 1
 DEB_INSTALL_ROOT     := /usr/src/packages/BUILD/debian/tmp
-DEB_SOURCE_ROOT      := /usr/src/packages/SOURCES
-SOURCE1              := $(DEB_SOURCE_ROOT)/macros.%{ns_name}-apu
+DEB_SOURCE_ROOT      := /usr/src/packages/BUILD/debian/SOURCES_FROM_SPEC
+SOURCE1              := $(DEB_SOURCE_ROOT)/macros.ea-apu
 ## END_MAKE_VARS
 
 %:
@@ -75,20 +75,10 @@ override_dh_auto_configure:
 	# A fragile autoconf test which fails if the code trips
 	# any other warning; force correct result for OpenLDAP:
 	export ac_cv_ldap_set_rebind_proc_style=three
-	./configure --prefix=$(prefix_dir) \
-	        --libdir=$(prefix_lib) \
-	        --with-apr=$(ea_apr_dir) \
-	        --includedir=$(prefix_inc)/apr-$(apuver) \
-	        --with-ldap=ldap_r --without-gdbm \
-	        --with-sqlite3 --with-pgsql --with-odbc \
-	        --with-freetds \
-	        --with-berkeley-db \
-	        --without-sqlite2 \
-	        --with-crypto --with-openssl --with-nss \
-	        --with-mysql
+	./configure --prefix=$(prefix_dir) --libdir=$(prefix_lib) --with-apr=$(ea_apr_dir) --includedir=$(prefix_inc)/apr-$(apuver) --with-ldap=ldap_r --without-gdbm --with-sqlite3 --with-pgsql --with-odbc --with-berkeley-db --without-sqlite2 --with-crypto --with-openssl --with-nss --with-mysql
 	make 
 
-# override_dh_auto_install:
+override_dh_auto_install:
 	rm -rf $(DEB_INSTALL_ROOT)
 	make install DESTDIR=$(DEB_INSTALL_ROOT)
 	# Unpackaged files; remove the static libaprutil
@@ -106,6 +96,22 @@ override_dh_auto_configure:
 	# Use our correctly-named package files within pkgconfig
 	sed -ri '/pkg-config/{s/apr-util-$(apuver)/$(prefix_name)-$(apuver)/}' \
 	    $(DEB_INSTALL_ROOT)$(prefix_bin)/apu-$(apuver)-config
+	ls -R /usr/src/packages/BUILD
+	mkdir -p $(DEB_INSTALL_ROOT)/docs
+	cp /usr/src/packages/BUILD/CHANGES $(DEB_INSTALL_ROOT)/docs
+	cp /usr/src/packages/BUILD/LICENSE $(DEB_INSTALL_ROOT)/docs
+	cp /usr/src/packages/BUILD/NOTICE $(DEB_INSTALL_ROOT)/docs
+	# Set up the macros file
+	install -d -m 755 $(DEB_INSTALL_ROOT)/etc/rpm
+	sed -e 's/@APU_NAME@/%{prefix_name}/g' \
+    	-e 's/@APU_VER@/%{apuver}/g' \
+    	-e 's,@APU_DIR@,%{prefix_dir},g' \
+    	-e 's/@NAMESPACE@/%{ns_name}_/g' \
+    	$(SOURCE1) > $(DEB_INSTALL_ROOT)/etc/rpm/macros.$(pkg_name)
+	ls -R $(DEB_INSTALL_ROOT)
+	ls /usr/src/packages/BUILD/debian/tmp/opt/cpanel/ea-apr16/lib64/pkgconfig
+	mkdir -p $(DEB_INSTALL_ROOT)/usr/share/pkgconfig
+	mv $(DEB_INSTALL_ROOT)$(prefix_lib)/pkgconfig/apr-util-$(aprver).pc $(DEB_INSTALL_ROOT)/usr/share/pkgconfig/$(prefix_name)-$(aprver).pc
 
 override_dh_auto_test:
 	echo "Ignoring Tests"
