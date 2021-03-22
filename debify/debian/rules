@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 
 ## BEGIN_MAKE_VARS
-## NOTE: These variables are re-generated for each version
 aprver               := 1
 __isa_bits           := 64
 __isa_name           := x86
@@ -101,13 +100,6 @@ override_dh_auto_install:
 	cp /usr/src/packages/BUILD/CHANGES $(DEB_INSTALL_ROOT)/docs
 	cp /usr/src/packages/BUILD/LICENSE $(DEB_INSTALL_ROOT)/docs
 	cp /usr/src/packages/BUILD/NOTICE $(DEB_INSTALL_ROOT)/docs
-	# Set up the macros file
-	install -d -m 755 $(DEB_INSTALL_ROOT)/etc/rpm
-	sed -e 's/@APU_NAME@/%{prefix_name}/g' \
-    	-e 's/@APU_VER@/%{apuver}/g' \
-    	-e 's,@APU_DIR@,%{prefix_dir},g' \
-    	-e 's/@NAMESPACE@/%{ns_name}_/g' \
-    	$(SOURCE1) > $(DEB_INSTALL_ROOT)/etc/rpm/macros.$(pkg_name)
 	ls -R $(DEB_INSTALL_ROOT)
 	ls /usr/src/packages/BUILD/debian/tmp/opt/cpanel/ea-apr16/lib64/pkgconfig
 	mkdir -p $(DEB_INSTALL_ROOT)/usr/share/pkgconfig
