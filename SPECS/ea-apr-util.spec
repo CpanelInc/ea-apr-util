@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 9
+%define release_prefix 8
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -309,9 +309,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
-* Tue Mar 16 2021 Julian Brown <julian.brown@cpanel.net> - 1.6.1-9
-- ZC-8611: ZC-8611-apr-util: add ubuntu building
-
 * Mon Nov 23 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-8
 - ZC-8005: Remove ea-openssl11 on C8
 
