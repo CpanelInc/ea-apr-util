@@ -36,7 +36,7 @@ sub _sort_block {
 sub _get_required {
     my ($http) = @_;
 
-    my $listing_url = "https://www-us.apache.org/dist/apr/";
+    my $listing_url = "https://downloads.apache.org/apr/";
     my $res         = $http->get($listing_url);
     if ( !$res->{success} ) {
         die "Could not GET apr-util dist page ($res->{status} $res->{reason})\n";
