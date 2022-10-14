@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 8
+%define release_prefix 9
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -81,6 +81,10 @@ Group: Development/Libraries
 Summary: APR utility library MySQL DBD driver
 BuildRequires: mysql-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
+
+%if 0%{?rhel} == 9
+Requires: mysql-libs
+%endif
 
 %description mysql
 This package provides the MySQL driver for the apr-util DBD
@@ -309,6 +313,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Fri Oct 14 2022 Julian Brown <julian.brown@cpanel.net> - 1.6.1-9
+- ZC-10375: Changes to fix for AlmaLinux 9
+
 * Mon Nov 23 2020 Julian Brown <julian.brown@cpanel.net> - 1.6.1-8
 - ZC-8005: Remove ea-openssl11 on C8
 
