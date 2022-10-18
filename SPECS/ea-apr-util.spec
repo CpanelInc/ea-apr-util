@@ -29,7 +29,7 @@ Name: %{pkg_name}
 Version: 1.6.1
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 9
+%define release_prefix 10
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -313,6 +313,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Tue Oct 18 2022 Julian Brown <julian.brown@cpanel.net> - 1.6.1-10
+- ZC-10391: Fix ubuntu dependency to mysql-libs
+
 * Fri Oct 14 2022 Julian Brown <julian.brown@cpanel.net> - 1.6.1-9
 - ZC-10375: Changes to fix for AlmaLinux 9
 
