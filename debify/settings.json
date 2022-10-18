@@ -5,6 +5,9 @@
         "ea_apr_config": "/opt/cpanel/ea-apr16/bin/apr-1-config",
         "isa": "16"
     },
+    "remove_from_requires": [
+        "mysql-libs"
+    ],
     "do_not_build_packages" : [
         "ea-apr-util-freetds"
     ]
