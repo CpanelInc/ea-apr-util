@@ -1,7 +1,7 @@
-From 190d819a351620e34e969a86bfd668fe48ccc3a4 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Julian Brown <julian.brown@cpanel.net>
 Date: Thu, 14 May 2020 14:09:11 -0500
-Subject: [PATCH] apr-util: to make it work with Mysql *
+Subject: [PATCH 4/4] apr-util: to make it work with Mysql *
 
 my_global.h no longer exists, mysql.h is what you need to include
 in it's place.
@@ -13,57 +13,32 @@ my_bool is no longer in the code, changed to bool.
 my_init(), per Mysql 8 no longer exists and it's function has been
 taken care of behind the scenes.
 ---
- build/dbd.m4        | 16 ++++++++--------
- dbd/apr_dbd_mysql.c | 12 ++++++------
- 2 files changed, 14 insertions(+), 14 deletions(-)
+ build/dbd.m4        |  2 --
+ dbd/apr_dbd_mysql.c | 13 +++++--------
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/build/dbd.m4 b/build/dbd.m4
-index c6e40e0..46defc6 100644
+index 46ba465..856a0cf 100644
 --- a/build/dbd.m4
 +++ b/build/dbd.m4
-@@ -176,15 +176,15 @@ AC_DEFUN([APU_CHECK_DBD_MYSQL], [
-         APR_ADDTO(LIBS, [$mysql_LIBS])
+@@ -190,7 +190,6 @@ AC_DEFUN([APU_CHECK_DBD_MYSQL], [
+         AC_CHECK_HEADERS([mysql/mysql.h mysql/errmsg.h], [apu_have_mysql=1], [apu_have_mysql=0; break])
        fi
- 
--      AC_CHECK_HEADERS([mysql.h my_global.h my_sys.h],
-+      AC_CHECK_HEADERS([mysql.h  ],
-                        AC_CHECK_LIB(mysqlclient, mysql_init, [apu_have_mysql=1]),
-                        [apu_have_mysql=0; break],
--                       [#include <my_global.h>])
-+                       [#include <mysql.h>])
-       if test "$apu_have_mysql" = "0"; then
--        AC_CHECK_HEADERS([mysql/mysql.h mysql/my_global.h mysql/my_sys.h],
-+        AC_CHECK_HEADERS([mysql/mysql.h  ],
-                          AC_CHECK_LIB(mysqlclient, mysql_init, [apu_have_mysql=1]),
-                          [apu_have_mysql=0; break],
--                         [#include <mysql/my_global.h>])
-+                         [#include <mysql/mysql.h>])
+       if test "$apr_have_mysql" = "1"; then
+-        AC_CHECK_HEADERS([my_global.h my_sys.h mysql/my_global.h mysql/my_sys.h])
+         AC_CHECK_LIB($my_library, mysql_init,, [apu_have_mysql=0])
        fi
-       if test "$apu_have_mysql" != "0" && test "x$MYSQL_CONFIG" != 'x'; then
-         APR_ADDTO(APRUTIL_PRIV_INCLUDES, [$mysql_CPPFLAGS])
-@@ -207,16 +207,16 @@ AC_DEFUN([APU_CHECK_DBD_MYSQL], [
-       APR_ADDTO(LIBS, [$mysql_LIBS])
- 
-       AC_MSG_NOTICE(checking for mysql in $withval)
--      AC_CHECK_HEADERS([mysql.h my_global.h my_sys.h],
-+      AC_CHECK_HEADERS([mysql.h  ],
-                        AC_CHECK_LIB(mysqlclient, mysql_init, [apu_have_mysql=1]),
-                        [apu_have_mysql=0; break],
--                       [#include <my_global.h>])
-+                       [#include <mysql.h>])
- 
-       if test "$apu_have_mysql" != "1"; then
--        AC_CHECK_HEADERS([mysql/mysql.h mysql/my_global.h mysql/my_sys.h],
-+        AC_CHECK_HEADERS([mysql/mysql.h  ],
-                          AC_CHECK_LIB(mysqlclient, mysql_init, [apu_have_mysql=1]),
-                          [apu_have_mysql=0; break],
--                         [#include <mysql/my_global.h>])
-+                         [#include <mysql/mysql.h>])
+       if test "$apu_have_mysql" = "1" && test "x$MYSQL_CONFIG" != 'x'; then
+@@ -225,7 +224,6 @@ AC_DEFUN([APU_CHECK_DBD_MYSQL], [
+         AC_CHECK_HEADERS([mysql/mysql.h mysql/errmsg.h], [apu_have_mysql=1], [apu_have_mysql=0; break])
        fi
-       if test "$apu_have_mysql" != "0"; then
-         APR_ADDTO(APRUTIL_PRIV_INCLUDES, [$mysql_CPPFLAGS])
+       if test "$apr_have_mysql" = "1"; then
+-        AC_CHECK_HEADERS([my_global.h my_sys.h mysql/my_global.h mysql/my_sys.h])
+         AC_CHECK_LIB($my_library, mysql_init,, [apu_have_mysql=0])
+       fi
+       if test "$apu_have_mysql" = "1"; then
 diff --git a/dbd/apr_dbd_mysql.c b/dbd/apr_dbd_mysql.c
-index 3b8017d..b9ee920 100644
+index d3e938c..af5b693 100644
 --- a/dbd/apr_dbd_mysql.c
 +++ b/dbd/apr_dbd_mysql.c
 @@ -713,9 +713,9 @@ static int dbd_mysql_pselect_internal(apr_pool_t *pool, apr_dbd_t *sql,
@@ -99,15 +74,13 @@ index 3b8017d..b9ee920 100644
  #endif
      MYSQL *real_conn;
      unsigned long flags = 0;
-@@ -1262,7 +1262,7 @@ static apr_status_t thread_end(void *data)
+@@ -1262,9 +1262,6 @@ static apr_status_t thread_end(void *data)
  
  static void dbd_mysql_init(apr_pool_t *pool)
  {
+-#if MYSQL_VERSION_ID < 100000
 -    my_init();
-+    
+-#endif
      mysql_thread_init();
  
      /* FIXME: this is a guess; find out what it really does */
--- 
-2.25.1
-

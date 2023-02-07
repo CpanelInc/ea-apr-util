@@ -26,20 +26,20 @@
 
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
-Version: 1.6.1
+Version: 1.6.3
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 10
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
-Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.gz
+Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
 Source1: macros.%{ns_name}-apu
 
 Patch1: 0001-Update-pkg-config-variables.patch
 Patch2: 0002-Force-static-linking-of-DBM-code.patch
-Patch3: 0003-Link-against-ea-openssl11-explicitly.patch
+Patch3: 0003-Link-against-ea-openssl-explicitly.patch
 Patch4: 0004-apr-util-to-make-it-work-with-Mysql.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -313,6 +313,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Feb 02 2023 Tim Mullin <tim@cpanel.net> - 1.6.3-1
+- EA-11199: Update apr-util from v1.6.1 to v1.6.3
+- CVE-2022-25147
+    Integer Overflow or Wraparound vulnerability in apr_base64 functions
+    of Apache Portable Runtime Utility (APR-util) allows an attacker to
+    write beyond bounds of a buffer.
+
 * Tue Oct 18 2022 Julian Brown <julian.brown@cpanel.net> - 1.6.1-10
 - ZC-10391: Fix ubuntu dependency to mysql-libs
 
