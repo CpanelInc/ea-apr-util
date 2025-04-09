@@ -5,6 +5,7 @@
 %define ea_openssl_ver 1.1.1d-1
 
 %if 0%{?rhel} >= 10
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/#_brp_buildroot_policy_scripts
 %global __brp_remove_la_files %nil
 %endif
 
@@ -222,6 +223,16 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
         --with-mysql
 
 %if 0%{?rhel} >= 10
+# AlmaLinux 10
+# I tried 9 ways to Sunday to add the below CFLAGs, which are absolutely required to build
+# apr-util on AL10.  AL10 uses a newer way more restrictive gcc, that marks these as errors, when
+# they are benign annoyances at worst.  It will not compile without these CFLAGS in the crypto section.
+# I tried configure, exporting CFLAGS, ALL_CFLAGS and many other tools.  So I had to take the big hammer
+# to it.  build/rules.mk does not exist until after configure is called, so I am modifying it with the
+# CFLAGS prior to calling make.
+#
+# TOTAL UGMO
+
 perl -pi -e "s/^CFLAGS=.*$/$& -Wno-implicit-function-declaration -Wno-int-conversion/;" build/rules.mk
 %endif
 
@@ -270,7 +281,7 @@ sed -e 's/@APU_NAME@/%{prefix_name}/g' \
 # When that runs we get an invalid rpath, to a valid rpath
 # It is a false positive, and probably is some bug in check-rpaths.
 # so the only way around this is to disable invalid-rpaths check
-# https://search.brave.com/search?q=check-rpaths+QA_RPATHS&source=desktop&summary=1&conversation=c01a61d25189793dcf2939
+# https://github.com/rpm-software-management/rpm/blob/96fe0562712227c1764f2bae27f1b138dda7e032/scripts/check-rpaths-worker#L39
 export QA_RPATHS=0x0002
 %endif
 
