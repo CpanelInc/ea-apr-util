@@ -4,6 +4,11 @@
 
 %define ea_openssl_ver 1.1.1d-1
 
+%if 0%{?rhel} >= 10
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/#_brp_buildroot_policy_scripts
+%global __brp_remove_la_files %nil
+%endif
+
 %if 0%{?fedora} < 18 && 0%{?rhel} < 7
 %define dbdep db4-devel
 %else
@@ -37,10 +42,10 @@ URL: http://apr.apache.org/
 Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
 Source1: macros.%{ns_name}-apu
 
-Patch1: 0001-Update-pkg-config-variables.patch
-Patch2: 0002-Force-static-linking-of-DBM-code.patch
-Patch3: 0003-Link-against-ea-openssl-explicitly.patch
-Patch4: 0004-apr-util-to-make-it-work-with-Mysql.patch
+Patch1:  0001-Update-pkg-config-variables.patch
+Patch2:  0002-Force-static-linking-of-DBM-code.patch
+Patch3:  0003-Link-against-ea-openssl-explicitly.patch
+Patch4:  0004-apr-util-to-make-it-work-with-Mysql.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
@@ -69,7 +74,12 @@ library of C data structures and routines.
 %package pgsql
 Group: Development/Libraries
 Summary: APR utility library PostgreSQL DBD driver
+
+%if 0%{?rhel} >= 10
+BuildRequires: postgresql-private-devel
+%else
 BuildRequires: postgresql-devel
+%endif
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description pgsql
@@ -82,7 +92,7 @@ Summary: APR utility library MySQL DBD driver
 BuildRequires: mysql-devel
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
-%if 0%{?rhel} == 9
+%if 0%{?rhel} >= 9
 Requires: mysql-libs
 %endif
 
@@ -183,18 +193,27 @@ export LDADD_dbd_mysql="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpane
 export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/cpanel/ea-openssl11/%{_lib}"
 %endif
 
+# AlmaLinux 10 - dropping --with-berkley-db, cannot seem to find a compatible version
+
 ./configure --prefix=%{prefix_dir} \
         --libdir=%{prefix_lib} \
         --with-apr=%{ea_apr_dir} \
         --includedir=%{prefix_inc}/apr-%{apuver} \
-        --with-ldap=ldap_r --without-gdbm \
+%if 0%{?rhel} >= 10
+        --with-ldap-include=/usr/include/ \
+        --with-ldap-lib=/usr/lib64/libldap.so \
+        --with-ldap=ldap \
+%else
+        --with-ldap=ldap_r \
+        --with-berkeley-db \
+%endif
+        --without-gdbm \
         --with-sqlite3 --with-pgsql --with-odbc \
 %if %{with_freetds}
         --with-freetds \
 %else
         --without-freetds \
 %endif
-        --with-berkeley-db \
         --without-sqlite2 \
 %if 0%{?rhel} < 8
         --with-crypto --with-openssl=/opt/cpanel/ea-openssl11 --with-nss \
@@ -202,6 +221,20 @@ export LDADD_crypto_openssl="-L/opt/cpanel/ea-openssl11/%{_lib} -Wl,-rpath=/opt/
         --with-crypto --with-openssl --with-nss \
 %endif
         --with-mysql
+
+%if 0%{?rhel} >= 10
+# AlmaLinux 10
+# I tried 9 ways to Sunday to add the below CFLAGs, which are absolutely required to build
+# apr-util on AL10.  AL10 uses a newer way more restrictive gcc, that marks these as errors, when
+# they are benign annoyances at worst.  It will not compile without these CFLAGS in the crypto section.
+# I tried configure, exporting CFLAGS, ALL_CFLAGS and many other tools.  So I had to take the big hammer
+# to it.  build/rules.mk does not exist until after configure is called, so I am modifying it with the
+# CFLAGS prior to calling make.
+#
+# TOTAL UGMO
+
+perl -pi -e "s/^CFLAGS=.*$/$& -Wno-implicit-function-declaration -Wno-int-conversion/;" build/rules.mk
+%endif
 
 make %{?_smp_mflags}
 
@@ -242,6 +275,15 @@ sed -e 's/@APU_NAME@/%{prefix_name}/g' \
     -e 's,@APU_DIR@,%{prefix_dir},g' \
     -e 's/@NAMESPACE@/%{ns_name}_/g' \
     %{SOURCE1} > $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.%{pkg_name}
+
+%if 0%{?rhel} >= 10
+# On Almalinux 10, the post install checks calls /usr/lib/rpm/check-rpaths.
+# When that runs we get an invalid rpath, to a valid rpath
+# It is a false positive, and probably is some bug in check-rpaths.
+# so the only way around this is to disable invalid-rpaths check
+# https://github.com/rpm-software-management/rpm/blob/96fe0562712227c1764f2bae27f1b138dda7e032/scripts/check-rpaths-worker#L39
+export QA_RPATHS=0x0002
+%endif
 
 %check
 # Run the less verbose test suites
@@ -306,7 +348,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 %{prefix_bin}/apu-%{apuver}-config
-%{prefix_lib}/libaprutil-%{apuver}.*a
+%{prefix_lib}/libaprutil-%{apuver}.la
 %{prefix_lib}/libaprutil-%{apuver}.so
 %{prefix_inc}/apr-%{apuver}/*.h
 %{_libdir}/pkgconfig/*.pc
