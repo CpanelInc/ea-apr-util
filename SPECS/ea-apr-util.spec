@@ -34,7 +34,7 @@ Name: %{pkg_name}
 Version: 1.6.3
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 1
+%define release_prefix 2
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -46,6 +46,8 @@ Patch1:  0001-Update-pkg-config-variables.patch
 Patch2:  0002-Force-static-linking-of-DBM-code.patch
 Patch3:  0003-Link-against-ea-openssl-explicitly.patch
 Patch4:  0004-apr-util-to-make-it-work-with-Mysql.patch
+Patch5:  0005-apr-util-to-make-it-work-with-Mariadb.patch
+
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires: %{ns_name}-apr%{?_isa} >= 1.6.3
@@ -89,7 +91,11 @@ DBD (database abstraction) interface.
 %package mysql
 Group: Development/Libraries
 Summary: APR utility library MySQL DBD driver
+%if 0%{?rhel} >= 10
+BuildRequires: mariadb-devel
+%else
 BuildRequires: mysql-devel
+%endif
 Requires: %{pkg_name}%{?_isa} = %{version}-%{release}
 
 %if 0%{?rhel} >= 9
@@ -178,8 +184,12 @@ This package provides the NSS crypto support for the apr-util.
 %patch3 -p1 -b .ssllinks
 %endif
 
+%if 0%{?rhel} >= 10
+%patch5 -p1 -b .mariadb
+%else
 %if 0%{?rhel} > 7
 %patch4 -p1 -b .mysql8
+%endif
 %endif
 
 %build
@@ -355,6 +365,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Tue Jul 29 2025 Brian Mendoza <brian.mendoza@webpros.com> - 1.6.3-2
+- EA4-53: Fix Almalinux 10 mysql-devel dependency and patch problems
+
 * Thu Feb 02 2023 Tim Mullin <tim@cpanel.net> - 1.6.3-1
 - EA-11199: Update apr-util from v1.6.1 to v1.6.3
 - CVE-2022-25147

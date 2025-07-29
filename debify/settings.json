@@ -6,9 +6,13 @@
         "isa": "16"
     },
     "remove_from_requires": [
-        "mysql-libs"
+        "mysql-libs",
+        "mariadb-devel"
     ],
     "do_not_build_packages" : [
         "ea-apr-util-freetds"
+    ],
+    "remove_from_patches": [
+        "0005-apr-util-to-make-it-work-with-Mariadb.patch"
     ]
 }
