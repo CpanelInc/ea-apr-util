@@ -1,0 +1,95 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Brian Mendoza <brian.mendoza@webpros.com>
+Date: Tue, 29 Jul 2025 14:09:11 -0500
+Subject: [PATCH 5/5] apr-util: fix MySQL/MariaDB build for AlmaLinux 10+
+
+my_global.h no longer exists, mysql.h is what you need to include
+in its place.
+
+my_sys.h no longer exists and does not need to be included.
+
+my_bool is no longer in the code, changed to bool.
+
+my_init(), per Mysql 8 no longer exists and its function has been
+taken care of behind the scenes.
+---
+ build/dbd.m4        |  2 --
+ dbd/apr_dbd_mysql.c | 15 +++++++++++++--
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/build/dbd.m4 b/build/dbd.m4
+index 46ba465..856a0cf 100644
+--- a/build/dbd.m4
++++ b/build/dbd.m4
+@@ -190,7 +190,6 @@
+         AC_CHECK_HEADERS([mysql/mysql.h mysql/errmsg.h], [apu_have_mysql=1], [apu_have_mysql=0; break])
+       fi
+       if test "$apr_have_mysql" = "1"; then
+-        AC_CHECK_HEADERS([my_global.h my_sys.h mysql/my_global.h mysql/my_sys.h])
+         AC_CHECK_LIB($my_library, mysql_init,, [apu_have_mysql=0])
+       fi
+       if test "$apu_have_mysql" = "1" && test "x$MYSQL_CONFIG" != 'x'; then
+@@ -225,7 +224,6 @@
+         AC_CHECK_HEADERS([mysql/mysql.h mysql/errmsg.h], [apu_have_mysql=1], [apu_have_mysql=0; break])
+       fi
+       if test "$apr_have_mysql" = "1"; then
+-        AC_CHECK_HEADERS([my_global.h my_sys.h mysql/my_global.h mysql/my_sys.h])
+         AC_CHECK_LIB($my_library, mysql_init,, [apu_have_mysql=0])
+       fi
+       if test "$apu_have_mysql" = "1"; then
+diff --git a/dbd/apr_dbd_mysql.c b/dbd/apr_dbd_mysql.c
+index 8e7e2b2..c5e6b2a 100644
+--- a/dbd/apr_dbd_mysql.c
++++ b/dbd/apr_dbd_mysql.c
+@@ -44,6 +44,8 @@
+ #include <errmsg.h>
+ #endif
+ 
++#include <stdbool.h>
++
+ #include "apr_strings.h"
+ #include "apr_lib.h"
+ #include "apr_buckets.h"
+@@ -713,9 +715,9 @@
+                                       int random, MYSQL_BIND *bind)
+ {
+     int nfields, i;
+-    my_bool *is_nullr;
++    char *is_nullr;
+ #if MYSQL_VERSION_ID >= 50000
+-    my_bool *error;
++    char *error;
+ #endif
+     int ret;
+     unsigned long *length, maxlen;
+@@ -738,9 +740,9 @@
+                 (*res)->bind = apr_palloc(pool, nfields*sizeof(MYSQL_BIND));
+                 length = apr_pcalloc(pool, nfields*sizeof(unsigned long));
+ #if MYSQL_VERSION_ID >= 50000
+-                error = apr_palloc(pool, nfields*sizeof(my_bool));
++                error = apr_palloc(pool, nfields * sizeof(char));
+ #endif
+-                is_nullr = apr_pcalloc(pool, nfields*sizeof(my_bool));
++                is_nullr = apr_pcalloc(pool, nfields * sizeof(char));
+                 for ( i = 0; i < nfields; ++i ) {
+                     maxlen = ((*res)->res->fields[i].length < sql->fldsz ?
+                               (*res)->res->fields[i].length : sql->fldsz) + 1;
+@@ -1104,7 +1106,7 @@
+     const char *value;
+     size_t vlen;
+ #if MYSQL_VERSION_ID >= 50013
+-    my_bool do_reconnect = 1;
++    bool do_reconnect = 1;
+ #endif
+     MYSQL *real_conn;
+     unsigned long flags = 0;
+@@ -1262,9 +1264,6 @@
+ 
+ static void dbd_mysql_init(apr_pool_t *pool)
+ {
+-#if MYSQL_VERSION_ID < 100000
+-    my_init();
+-#endif
+     mysql_thread_init();
+ 
+     /* FIXME: this is a guess; find out what it really does */
