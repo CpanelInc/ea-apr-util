@@ -21,6 +21,12 @@ cp $ea_apr_config config/apr-1-config
 cp $ea_apr_config config/apr-config
 cp /usr/share/pkgconfig/ea-apr16-1.pc config/apr-1.pc
 
+UBUNTU_VERSION=$(. /etc/os-release 2>/dev/null && echo "${VERSION_ID:-0}" | tr -d '.')
+BERKELEY_DB_FLAG="--with-berkeley-db"
+if [[ "${UBUNTU_VERSION:-0}" -ge 2604 ]]; then
+    BERKELEY_DB_FLAG="--without-berkeley-db"
+fi
+
 ./configure --prefix=$prefix_dir \
         --libdir=$prefix_lib \
         --with-apr=$ea_apr_config \
@@ -28,7 +34,7 @@ cp /usr/share/pkgconfig/ea-apr16-1.pc config/apr-1.pc
         --with-ldap=ldap_r --without-gdbm \
         --with-sqlite3 --with-pgsql --with-odbc \
         --without-freetds \
-        --with-berkeley-db \
+        $BERKELEY_DB_FLAG \
         --without-sqlite2 \
         --with-crypto --with-openssl --with-nss \
         --with-mysql

@@ -34,7 +34,7 @@ Name: %{pkg_name}
 Version: 1.6.3
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 2
+%define release_prefix 3
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -365,6 +365,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Mon Apr 20 2026 Heekyoung Park <heekyoung.park@webpros.com> - 1.6.3-3
+- EA4-260: Fix Ubuntu 26 build problem
+
 * Tue Jul 29 2025 Brian Mendoza <brian.mendoza@webpros.com> - 1.6.3-2
 - EA4-53: Fix Almalinux 10 mysql-devel dependency and patch problems
 
