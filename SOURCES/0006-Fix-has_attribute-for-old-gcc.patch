@@ -1,0 +1,27 @@
+--- a/crypto/apr_crypto.c
++++ b/crypto/apr_crypto.c
+@@ -194,6 +194,10 @@
+  * Paper:
+  *   https://cr.yp.to/papers/cryptoint-20250424.pdf
+  */
++#ifndef __has_attribute
++#define __has_attribute(__x)    0
++#endif
++
+ #if __has_attribute(always_inline)
+ __attribute__((always_inline))
+ #endif
+--- a/crypto/apr_passwd.c
++++ b/crypto/apr_passwd.c
+@@ -64,11 +64,9 @@
+  * Paper:
+  *   https://cr.yp.to/papers/cryptoint-20250424.pdf
+  */
+-#if (defined(__xlc__) && !defined(__GNUC__))
+ #ifndef __has_attribute
+ #define __has_attribute(__x)    0
+ #endif
+-#endif
+ 
+ #if __has_attribute(always_inline)
+ __attribute__((always_inline))
