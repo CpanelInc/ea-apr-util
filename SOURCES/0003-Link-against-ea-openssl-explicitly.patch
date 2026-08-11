@@ -7,29 +7,27 @@ Subject: [PATCH 3/4] Link against ea-openssl explicitly
  configure | 10 +++++-----
  1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/configure b/configure
-index 0f741d3..a5e3147 100755
 --- a/configure
 +++ b/configure
-@@ -5142,7 +5142,7 @@ then :
+@@ -5213,7 +5213,7 @@
    printf %s "(cached) " >&6
- else $as_nop
-   ac_check_lib_save_LIBS=$LIBS
+ else case e in #(
+   e) ac_check_lib_save_LIBS=$LIBS
 -LIBS="-lssl -lcrypto $LIBS"
 +LIBS="-l:libssl.so.1.1.1 -l:libcrypto.so.1.1.1 $LIBS"
  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
-@@ -5286,7 +5286,7 @@ then :
+@@ -5372,7 +5372,7 @@
    printf %s "(cached) " >&6
- else $as_nop
-   ac_check_lib_save_LIBS=$LIBS
+ else case e in #(
+   e) ac_check_lib_save_LIBS=$LIBS
 -LIBS="-lssl -lcrypto $LIBS"
 +LIBS="-l:libssl.so.1.1.1 -l:libcrypto.so.1.1.1 $LIBS"
  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
-@@ -5392,10 +5392,10 @@ fi
+@@ -5556,10 +5556,10 @@
        if test "$apu_have_openssl" = "1"; then
  
    if test "x$LDADD_crypto_openssl" = "x"; then

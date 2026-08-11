@@ -31,7 +31,7 @@
 
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
-Version: 1.6.3
+Version: 1.6.5
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
 %define release_prefix 3
@@ -39,7 +39,7 @@ Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
 URL: http://apr.apache.org/
-Source0: http://www.apache.org/dist/apr/%{pkg_base}-%{version}.tar.bz2
+Source0: https://downloads.apache.org/apr/%{pkg_base}-%{version}.tar.bz2
 Source1: macros.%{ns_name}-apu
 
 Patch1:  0001-Update-pkg-config-variables.patch
@@ -365,6 +365,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Tue Aug 11 2026 Cory McIntire <cory.mcintire@webpros.com> - 1.6.5-3
+- EA-13527: Update apr-util from v1.6.3 to v1.6.5
+
 * Mon Apr 20 2026 Heekyoung Park <heekyoung.park@webpros.com> - 1.6.3-3
 - EA4-260: Fix Ubuntu 26 build problem
 
