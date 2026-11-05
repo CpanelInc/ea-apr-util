@@ -31,10 +31,10 @@
 
 Summary: Apache Portable Runtime Utility library
 Name: %{pkg_name}
-Version: 1.6.5
+Version: 1.6.6
 Vendor: cPanel, Inc.
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4542 for more details
-%define release_prefix 4
+%define release_prefix 1
 Release: %{release_prefix}%{?dist}.cpanel
 License: ASL 2.0
 Group: System Environment/Libraries
@@ -47,7 +47,6 @@ Patch2:  0002-Force-static-linking-of-DBM-code.patch
 Patch3:  0003-Link-against-ea-openssl-explicitly.patch
 Patch4:  0004-apr-util-to-make-it-work-with-Mysql.patch
 Patch5:  0005-apr-util-to-make-it-work-with-Mariadb.patch
-Patch6:  0006-Fix-has_attribute-for-old-gcc.patch
 
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -181,7 +180,6 @@ This package provides the NSS crypto support for the apr-util.
 %setup -q -n %{pkg_base}-%{version}
 %patch1 -p1 -b .pkgconf
 %patch2 -p1 -b .nodbmdso
-%patch6 -p1 -b .hasattr
 %if 0%{?rhel} < 8
 %patch3 -p1 -b .ssllinks
 %endif
@@ -367,6 +365,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/rpm/macros.%{pkg_name}
 
 %changelog
+* Thu Nov 05 2026 Cory McIntire <cory.mcintire@webpros.com> - 1.6.6-1
+- EA-13636: Update ea-apr-util from v1.6.5 to v1.6.6
+
 * Tue Aug 11 2026 Cory McIntire <cory.mcintire@webpros.com> - 1.6.5-4
 - EA-13527: Fix build on CentOS 7 (old gcc lacks __has_attribute)
 
